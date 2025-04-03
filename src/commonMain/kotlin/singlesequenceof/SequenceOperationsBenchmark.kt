@@ -28,12 +28,6 @@ class SequenceOperationsBenchmark {
         }
     }
 
-    @State(Scope.Benchmark)
-    class CreationState {
-        @Param("1", "10", "1000", "1000000")
-        var count: Int = 0
-    }
-
     // Terminal operation benchmarks
     @Benchmark
     fun sequenceFirst(blackhole: Blackhole, state: SequenceState) {
@@ -65,6 +59,26 @@ class SequenceOperationsBenchmark {
         blackhole.consume(result)
     }
 
+    // Polymorphic call site benchmark
+    @Benchmark
+    fun polymorphicCallSite(blackhole: Blackhole, state: PolymorphicState) {
+        var sum = 0
+        for (seq in state.sequences) {
+            sum += seq
+                .map { it * 2 }
+                .filter { it > 0 }
+                .filter { it % 2 == 0 }
+                .firstOrNull() ?: 0
+        }
+        blackhole.consume(sum)
+    }
+
+    @State(Scope.Benchmark)
+    class CreationState {
+        @Param("1", "10", "1000", "1000000")
+        var count: Int = 0
+    }
+
     @State(Scope.Benchmark)
     class SequenceState {
         @Param("default", "single")
@@ -79,6 +93,27 @@ class SequenceOperationsBenchmark {
                 "default" -> sequenceOf(element)
                 "single" -> singleSequenceOf(element)
                 else -> throw IllegalArgumentException("Unknown sequence type: $type")
+            }
+        }
+    }
+
+    @State(Scope.Benchmark)
+    class PolymorphicState {
+        @Param("default_only", "single_only", "mixed")
+        private lateinit var scenario: String
+
+        private val elements = List(100) { RANDOM.nextInt(0, 1_000_000) * 2 + 1 }
+        lateinit var sequences: List<Sequence<Int>>
+
+        @Setup
+        fun setup() {
+            sequences = when (scenario) {
+                "default_only" -> elements.map { sequenceOf(it) }
+                "single_only" -> elements.map { singleSequenceOf(it) }
+                "mixed" -> elements.mapIndexed { index, value ->
+                    if (index % 2 == 0) sequenceOf(value) else singleSequenceOf(value)
+                }
+                else -> throw IllegalArgumentException("Unknown scenario: $scenario")
             }
         }
     }
