@@ -18,6 +18,14 @@ class SequenceOperationsBenchmark {
         }
     }
 
+    @Benchmark
+    fun sequenceOfCreationSingle(blackhole: Blackhole, state: CreationState) {
+        repeat(state.count) {
+            val seq = singleSequenceOf(1)
+            blackhole.consume(seq)
+        }
+    }
+
     @State(Scope.Benchmark)
     class CreationState {
         @Param("1", "10", "1000", "1000000")
