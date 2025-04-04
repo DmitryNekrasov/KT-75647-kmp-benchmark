@@ -36,8 +36,9 @@ class SequenceOperationsBenchmark {
     @Benchmark
     fun sequenceChain(blackhole: Blackhole) {
         val result = sequence
+            .map(Int::toLong)
             .map { it * 3 }
-            .filter { (it and 1) == 1 }
+            .filter { (it and 1) == 1L }
             .firstOrNull()
         blackhole.consume(result)
     }
@@ -48,8 +49,9 @@ class SequenceOperationsBenchmark {
         val baseValue = 78
         val result = sequence
             .map { it + baseValue }
+            .map(Int::toLong)
             .map { it * 3 }
-            .filter { (it and 1) == 1 }
+            .filter { (it and 1) == 1L }
             .map { it.toString() }
             .map { it.length }
             .sum()
