@@ -38,14 +38,31 @@ benchmark {
         register("linuxX64")
         register("linuxArm64")
     }
+    configurations {
+        named("main") {
+            mode = "avgt"
+            outputTimeUnit = "ns"
+            warmups = 10
+            iterations = 5
+            iterationTime = 1
+            iterationTimeUnit = "s"
+            advanced("jvmForks", 2)
+        }
+    }
 }
 
 jmh {
-    fork.set(2)
-    profilers.set(listOf("gc"))
+    benchmarkMode = listOf("avgt")
+    timeUnit = "ns"
+    fork = 2
+    warmup = "1s"
+    timeOnIteration = "1s"
+    warmupIterations = 10
+    iterations = 5
+    profilers = listOf("gc")
     includes.add(".*Benchmark.*")
-    failOnError.set(true)
-    resultFormat.set("JSON")
+    failOnError = true
+    resultFormat = "JSON"
     @Suppress("DEPRECATION")
     resultsFile.set(project.file("${project.buildDir}/reports/jmh/results.json"))
 }
