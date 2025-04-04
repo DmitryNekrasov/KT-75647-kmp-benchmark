@@ -21,18 +21,54 @@ import kotlin.random.Random
 @Measurement(iterations = 5, time = 1)
 class SequenceOperationsBenchmark {
 
+    // CreationState parameters
+    @Param("1", "10", "1000", "1000000")
+    var creationCount: Int = 0
+
+    // SequenceState parameters
+    @Param("default", "single")
+    private lateinit var sequenceType: String
+    lateinit var sequence: Sequence<Int>
+
+    // PolymorphicState parameters
+    @Param("default_only", "single_only", "mixed")
+    private lateinit var polymorphicScenario: String
+    lateinit var sequences: List<Sequence<Int>>
+
+    @Setup
+    fun setup() {
+        // Setup for sequence
+        val element = RANDOM.nextInt(0, 1_000_000) * 2 + 1
+        sequence = when (sequenceType) {
+            "default" -> sequenceOf(element)
+            "single" -> singleSequenceOf(element)
+            else -> throw IllegalArgumentException("Unknown sequence type: $sequenceType")
+        }
+
+        // Setup for polymorphic sequences
+        val elements = List(100) { RANDOM.nextInt(0, 1_000_000) * 2 + 1 }
+        sequences = when (polymorphicScenario) {
+            "default_only" -> elements.map { sequenceOf(it) }
+            "single_only" -> elements.map { singleSequenceOf(it) }
+            "mixed" -> elements.mapIndexed { index, value ->
+                if (index % 2 == 0) sequenceOf(value) else singleSequenceOf(value)
+            }
+            else -> throw IllegalArgumentException("Unknown scenario: $polymorphicScenario")
+        }
+    }
+
     // Basic creation benchmarks
     @Benchmark
-    fun sequenceOfCreationDefault(blackhole: Blackhole, state: CreationState) {
-        repeat(state.count) {
+    fun sequenceOfCreationDefault(blackhole: Blackhole) {
+        repeat(creationCount) {
             val seq = sequenceOf(1)
             blackhole.consume(seq)
         }
     }
 
     @Benchmark
-    fun sequenceOfCreationSingle(blackhole: Blackhole, state: CreationState) {
-        repeat(state.count) {
+    fun sequenceOfCreationSingle(blackhole: Blackhole) {
+        repeat(creationCount) {
             val seq = singleSequenceOf(1)
             blackhole.consume(seq)
         }
@@ -40,15 +76,15 @@ class SequenceOperationsBenchmark {
 
     // Terminal operation benchmarks
     @Benchmark
-    fun sequenceFirst(blackhole: Blackhole, state: SequenceState) {
-        var result = state.sequence.first()
+    fun sequenceFirst(blackhole: Blackhole) {
+        var result = sequence.first()
         blackhole.consume(result)
     }
 
     // Chain of transformations
     @Benchmark
-    fun sequenceChain(blackhole: Blackhole, state: SequenceState) {
-        val result = state.sequence
+    fun sequenceChain(blackhole: Blackhole) {
+        val result = sequence
             .map { it * 3 }
             .filter { (it and 1) == 1 }
             .firstOrNull()
@@ -57,9 +93,9 @@ class SequenceOperationsBenchmark {
 
     // Real-world scenario
     @Benchmark
-    fun sequenceRealWorld(blackhole: Blackhole, state: SequenceState) {
+    fun sequenceRealWorld(blackhole: Blackhole) {
         val baseValue = 78
-        val result = state.sequence
+        val result = sequence
             .map { it + baseValue }
             .map { it * 3 }
             .filter { (it and 1) == 1 }
@@ -71,9 +107,9 @@ class SequenceOperationsBenchmark {
 
     // Polymorphic call site benchmark
     @Benchmark
-    fun polymorphicCallSite(blackhole: Blackhole, state: PolymorphicState) {
+    fun polymorphicCallSite(blackhole: Blackhole) {
         var sum = 0
-        for (seq in state.sequences) {
+        for (seq in sequences) {
             sum += seq
                 .map { it * 2 }
                 .filter { it > 0 }
@@ -81,51 +117,6 @@ class SequenceOperationsBenchmark {
                 .firstOrNull() ?: 0
         }
         blackhole.consume(sum)
-    }
-
-    @State(Scope.Benchmark)
-    class CreationState {
-        @Param("1", "10", "1000", "1000000")
-        var count: Int = 0
-    }
-
-    @State(Scope.Benchmark)
-    class SequenceState {
-        @Param("default", "single")
-        private lateinit var type: String
-
-        lateinit var sequence: Sequence<Int>
-
-        @Setup
-        fun setup() {
-            val element = RANDOM.nextInt(0, 1_000_000) * 2 + 1
-            sequence = when (type) {
-                "default" -> sequenceOf(element)
-                "single" -> singleSequenceOf(element)
-                else -> throw IllegalArgumentException("Unknown sequence type: $type")
-            }
-        }
-    }
-
-    @State(Scope.Benchmark)
-    class PolymorphicState {
-        @Param("default_only", "single_only", "mixed")
-        private lateinit var scenario: String
-
-        private val elements = List(100) { RANDOM.nextInt(0, 1_000_000) * 2 + 1 }
-        lateinit var sequences: List<Sequence<Int>>
-
-        @Setup
-        fun setup() {
-            sequences = when (scenario) {
-                "default_only" -> elements.map { sequenceOf(it) }
-                "single_only" -> elements.map { singleSequenceOf(it) }
-                "mixed" -> elements.mapIndexed { index, value ->
-                    if (index % 2 == 0) sequenceOf(value) else singleSequenceOf(value)
-                }
-                else -> throw IllegalArgumentException("Unknown scenario: $scenario")
-            }
-        }
     }
 
     companion object {
