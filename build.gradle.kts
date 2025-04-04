@@ -35,6 +35,16 @@ kotlin {
     }
 }
 
+object BenchmarkConfiguration {
+    const val FORK = 2
+    const val BENCHMARK_MODE = "avgt"
+    const val TIME_UNIT = "ns"
+    const val ITERATION_TIME = 1L
+    const val ITERATION_TIME_UNIT = "s"
+    const val WARMUPS = 20
+    const val ITERATIONS = 10
+}
+
 benchmark {
     targets {
         register("jvm")
@@ -46,25 +56,29 @@ benchmark {
     }
     configurations {
         named("main") {
-            mode = "avgt"
-            outputTimeUnit = "ns"
-            warmups = 10
-            iterations = 5
-            iterationTime = 1
-            iterationTimeUnit = "s"
-            advanced("jvmForks", 2)
+            with(BenchmarkConfiguration) {
+                mode = BENCHMARK_MODE
+                outputTimeUnit = TIME_UNIT
+                warmups = WARMUPS
+                iterations = ITERATIONS
+                iterationTime = ITERATION_TIME
+                iterationTimeUnit = ITERATION_TIME_UNIT
+                advanced("jvmForks", FORK)
+            }
         }
     }
 }
 
 jmh {
-    benchmarkMode = listOf("avgt")
-    timeUnit = "ns"
-    fork = 2
-    warmup = "1s"
-    timeOnIteration = "1s"
-    warmupIterations = 10
-    iterations = 5
+    with(BenchmarkConfiguration) {
+        benchmarkMode = listOf(BENCHMARK_MODE)
+        timeUnit = TIME_UNIT
+        fork = FORK
+        warmup = "$ITERATION_TIME$ITERATION_TIME_UNIT"
+        timeOnIteration = "$ITERATION_TIME$ITERATION_TIME_UNIT"
+        warmupIterations = WARMUPS
+        iterations = ITERATIONS
+    }
     profilers = listOf("gc")
     includes.add(".*Benchmark.*")
     failOnError = true
