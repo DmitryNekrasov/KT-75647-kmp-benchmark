@@ -12,7 +12,7 @@ import kotlin.random.Random
 class SequencePolymorphicCallSiteBenchmark {
 
     @Param("default_only", "single_only", "mixed")
-    private lateinit var polymorphicScenario: String
+    lateinit var polymorphicScenario: String
     lateinit var sequences: List<Sequence<Int>>
 
     @Setup

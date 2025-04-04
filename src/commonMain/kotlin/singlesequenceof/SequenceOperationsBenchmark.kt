@@ -12,7 +12,7 @@ import kotlin.random.Random
 class SequenceOperationsBenchmark {
 
     @Param("default", "single")
-    private lateinit var sequenceType: String
+    lateinit var sequenceType: String
     lateinit var sequence: Sequence<Int>
 
     @Setup
