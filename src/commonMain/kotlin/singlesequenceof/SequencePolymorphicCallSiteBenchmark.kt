@@ -30,12 +30,13 @@ class SequencePolymorphicCallSiteBenchmark {
 
     @Benchmark
     fun polymorphicCallSite(blackhole: Blackhole) {
-        var sum = 0
+        var sum = 0L
         for (seq in sequences) {
             sum += seq
                 .map { it * 2 }
+                .map(Int::toLong)
                 .filter { it > 0 }
-                .filter { it % 2 == 0 }
+                .filter { it % 2 == 0L }
                 .firstOrNull() ?: 0
         }
         blackhole.consume(sum)
