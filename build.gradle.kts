@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalWasmDsl
+
 plugins {
     kotlin("multiplatform") version "2.1.10"
     kotlin("plugin.allopen") version "2.0.20"
@@ -13,12 +15,12 @@ repositories {
 }
 
 kotlin {
-    jvm {
-        withJava()
-    }
+    jvm { withJava() }
     linuxX64()
     linuxArm64()
     macosArm64()
+    js(IR) { nodejs() }
+    @OptIn(ExperimentalWasmDsl::class) wasmJs { nodejs() }
 
     sourceSets {
         val commonMain by getting {
@@ -39,6 +41,8 @@ benchmark {
         register("linuxX64")
         register("linuxArm64")
         register("macosArm64")
+        register("js")
+        register("wasmJs")
     }
     configurations {
         named("main") {
