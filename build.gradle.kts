@@ -18,6 +18,7 @@ kotlin {
     }
     linuxX64()
     linuxArm64()
+    macosArm64()
 
     sourceSets {
         val commonMain by getting {
@@ -37,6 +38,7 @@ benchmark {
         register("jvm")
         register("linuxX64")
         register("linuxArm64")
+        register("macosArm64")
     }
     configurations {
         named("main") {
