@@ -25,14 +25,12 @@ class SequenceOperationsBenchmark {
         }
     }
 
-    // Terminal operation benchmarks
     @Benchmark
     fun sequenceFirst(blackhole: Blackhole) {
         var result = sequence.first()
         blackhole.consume(result)
     }
 
-    // Chain of transformations
     @Benchmark
     fun sequenceChain(blackhole: Blackhole) {
         val result = sequence
@@ -43,7 +41,6 @@ class SequenceOperationsBenchmark {
         blackhole.consume(result)
     }
 
-    // Real-world scenario
     @Benchmark
     fun sequenceRealWorld(blackhole: Blackhole) {
         val baseValue = 78
