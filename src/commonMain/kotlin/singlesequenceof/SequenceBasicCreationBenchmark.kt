@@ -13,7 +13,7 @@ class SequenceBasicCreationBenchmark {
     var creationCount: Int = 0
 
     @Benchmark
-    fun sequenceOfCreationDefault(blackhole: Blackhole) {
+    fun singleSequenceOfCreationDefault(blackhole: Blackhole) {
         repeat(creationCount) {
             val seq = sequenceOf(1)
             blackhole.consume(seq)
@@ -21,9 +21,25 @@ class SequenceBasicCreationBenchmark {
     }
 
     @Benchmark
-    fun sequenceOfCreationSingle(blackhole: Blackhole) {
+    fun singleSequenceOfCreationSingle(blackhole: Blackhole) {
         repeat(creationCount) {
             val seq = singleSequenceOf(1)
+            blackhole.consume(seq)
+        }
+    }
+
+    @Benchmark
+    fun emptySequenceOfCreationDefault(blackhole: Blackhole) {
+        repeat(creationCount) {
+            val seq = sequenceOf<Int>()
+            blackhole.consume(seq)
+        }
+    }
+
+    @Benchmark
+    fun emptySequenceOfCreationSingle(blackhole: Blackhole) {
+        repeat(creationCount) {
+            val seq = emptySequenceOf<Int>()
             blackhole.consume(seq)
         }
     }

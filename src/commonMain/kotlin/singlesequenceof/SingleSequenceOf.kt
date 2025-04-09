@@ -13,3 +13,5 @@ fun <T> singleSequenceOf(element: T): Sequence<T> = Sequence {
         override fun hasNext(): Boolean = _hasNext
     }
 }
+
+inline fun <T> emptySequenceOf(): Sequence<T> = emptySequence()
